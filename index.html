@@ -1,1 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>＋7→＋10シミュレーション</title>
+</head>
+<body>
+  <h2>ゲームシミュレーション</h2>
+  <button onclick="runSimulation()">シミュレーション実行（100回）</button>
+  <pre id="output"></pre>
+
+  <script>
+    function simulateGameOnce() {
+      let cost = 0;
+      let aCount = 0, bCount = 0, cCount = 0;
+
+      while (true) {
+        // === 第1段階 ===
+        while (true) {
+          if (aCount >= 5) {
+            aCount = 0;
+            break;
+          }
+          cost += 10000;
+          if (Math.random() < 0.2) {
+            aCount = 0;
+            break;
+          }
+          aCount++;
+        }
+
+        // === 第2段階 ===
+        while (true) {
+          if (bCount >= 5) {
+            bCount = 0;
+            break;
+          }
+          cost += 10000;
+          if (Math.random() < 0.2) {
+            bCount = 0;
+            break;
+          }
+          bCount++;
+          break; // 戻って第1段階
+        }
+
+        if (bCount > 0) continue;
+
+        // === 第3段階 ===
+        while (true) {
+          if (cCount >= 5) {
+            cost += 10000;
+            return cost;
+          }
+          cost += 10000;
+          if (Math.random() < 0.1) {
+            return cost;
+          }
+          cCount++;
+          break; // 戻って第1段階
+        }
+      }
+    }
+
+    function runSimulation() {
+      const results = [];
+      for (let i = 0; i < 100; i++) {
+        results.push(simulateGameOnce());
+      }
+
+      const sum = results.reduce((a, b) => a + b, 0);
+      const avg = (sum / results.length) / 10000;
+      const max = Math.max(...results) / 10000;
+      const min = Math.min(...results) / 10000;
+
+      const sorted = [...results].sort((a, b) => a - b);
+      const p90 = sorted[Math.floor(0.9 * sorted.length)] / 10000;
+
+      const output = `
+平均金額: ${avg.toFixed(1)} 万円
+最大金額: ${max.toFixed(1)} 万円
+最小金額: ${min.toFixed(1)} 万円
+90%以下の支払い金額: ${p90.toFixed(1)} 万円
+      `;
+
+      document.getElementById("output").textContent = output;
+    }
+  </script>
+</body>
+</html>
 
