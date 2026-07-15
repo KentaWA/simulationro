@@ -308,7 +308,7 @@
                                         なし
                                     </button>
                                     <button onclick="setReduceSkill('ironhowling')" id="btnSkillIron" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-red-950/50 border border-transparent transition leading-tight">
-                                        ｱｲｱﾝﾊｳﾘﾝｸﾞ<br><span class="text-[8px] opacity-70">50%カット</span>
+                                        ｱｲｱﾝﾊｳﾘﾝｸﾞ<br><span class="text-[8px] opacity-70">40%カット</span>
                                     </button>
                                     <button onclick="setReduceSkill('antimagic')" id="btnSkillAnti" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-blue-950/50 border border-transparent transition leading-tight">
                                         ｱﾝﾁﾏｼﾞｯｸ<br><span class="text-[8px] opacity-70">60%カット</span>
@@ -857,7 +857,7 @@
 
             // 9. 減少スキル (最も高い軽減率スキルを排他選択)
             let skillRate = 1.0;
-            if (currentReduceSkill === 'ironhowling') skillRate = 0.5; // 50%カット
+            if (currentReduceSkill === 'ironhowling') skillRate = 0.6; // 40%カット
             if (currentReduceSkill === 'antimagic') skillRate = 0.4;    // 60%カット
             if (currentReduceSkill === 'uzukumaru') skillRate = 0.2;   // 80%カット
             if (currentReduceSkill === 'kongo') skillRate = 0.1;       // 90%カット
@@ -888,7 +888,7 @@
             updateStepUI(8, petDamage, himmelPet ? "ペット有り: -50%" : "ペット無し: 補正なし");
             
             let skillName = "適用なし";
-            if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-50%)";
+            if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-40%)";
             if(currentReduceSkill === 'antimagic') skillName = "ｱﾝﾁﾏｼﾞｯｸ (-60%)";
             if(currentReduceSkill === 'uzukumaru') skillName = "うずくまる (-80%)";
             if(currentReduceSkill === 'kongo') skillName = "金剛 (-90%)";
