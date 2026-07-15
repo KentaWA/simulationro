@@ -1,91 +1,1050 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <title>＋7→＋10シミュレーション</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テトラボルテックス許さないシミュレーター</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        vortex: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c084fc',
+                            400: '#a855f7',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        fire: '#ef4444',
+                        water: '#3b82f6',
+                        wind: '#10b981',
+                        earth: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #0b071e;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(239, 68, 68, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(59, 130, 246, 0.1) 0px, transparent 50%);
+        }
+        /* スライダーのカスタマイズ */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #2d2452;
+            height: 6px;
+            border-radius: 9999px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px #a855f7;
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+    </style>
 </head>
-<body>
-  <h2>ゲームシミュレーション</h2>
-  <button onclick="runSimulation()">シミュレーション実行（100回）</button>
-  <pre id="output"></pre>
+<body class="text-gray-100 min-h-screen pb-12">
 
-  <script>
-    function simulateGameOnce() {
-      let cost = 0;
-      let aCount = 0, bCount = 0, cCount = 0;
+    <!-- ヘッダー -->
+    <header class="border-b border-vortex-900/50 bg-black/40 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="relative w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-tr from-vortex-600 via-fire to-water">
+                    <i class="fa-solid fa-hurricane text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-vortex-300 via-pink-400 to-red-400">
+                        テトラボルテックス許さないシミュレーター
+                    </h1>
+                    <p class="text-xs text-vortex-300">Ragnarok Online - Tetra Vortex Damage Calculator</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="resetToDefault()" class="px-3 py-1.5 bg-vortex-950/40 border border-vortex-800/50 hover:bg-vortex-900/40 text-vortex-200 text-xs rounded transition flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i>初期設定に戻す
+                </button>
+            </div>
+        </div>
+    </header>
 
-      while (true) {
-        // === 第1段階 ===
-        while (true) {
-          if (aCount >= 5) {
-            aCount = 0;
-            break;
-          }
-          cost += 10000;
-          if (Math.random() < 0.2) {
-            aCount = 0;
-            break;
-          }
-          aCount++;
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+        <!-- メイングリッド -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- コントロールパネル (左側 7カラム) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- ボス設定セクション -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 text-red-500/5 text-9xl pointer-events-none font-bold">BOSS</div>
+                    <div class="flex items-center space-x-2.5 mb-4 border-b border-gray-800 pb-3">
+                        <span class="p-2 rounded-lg bg-red-500/10 text-red-400"><i class="fa-solid fa-dragon"></i></span>
+                        <div>
+                            <h2 class="font-bold text-lg text-red-200">ボスモンスター設定</h2>
+                            <p class="text-xs text-gray-400">TVを放つボスのMATKと、ボス固有のダメージ倍率を設定します</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-300 font-medium mb-1.5">対象ボス選択</label>
+                            <select id="bossSelect" onchange="onBossChange()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-vortex-500">
+                                <!-- JSで動的生成 -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 font-medium mb-1.5">ボスMATK (実数値)</label>
+                            <div class="relative">
+                                <input type="number" id="bossMatk" oninput="updateCalculations('matk')" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-vortex-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" min="1" max="1500000">
+                                <span class="absolute right-3 top-2.5 text-xs text-gray-400">MATK</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MATK スライダー -->
+                    <div class="mt-4">
+                        <div class="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>MATK 調整</span>
+                            <span class="text-red-400 font-mono" id="bossMatkVal">0</span>
+                        </div>
+                        <input type="range" id="bossMatkSlider" oninput="syncSlider('bossMatkSlider', 'bossMatk')" min="1000" max="1000000" step="1000" class="w-full">
+                    </div>
+
+                    <!-- ボス倍率の動的設定 -->
+                    <div class="mt-4 pt-3 border-t border-gray-800 flex flex-wrap justify-between items-center gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-400">テトラボルテックスダメージ倍率:</span>
+                            <span id="currentRatioBadge" class="px-2 py-0.5 bg-vortex-900/40 text-vortex-300 text-xs font-bold font-mono rounded border border-vortex-700">MATK × 200倍</span>
+                        </div>
+                        <div id="customRatioWrapper" class="hidden items-center space-x-2">
+                            <span class="text-xs text-gray-300">手動倍率設定:</span>
+                            <div class="flex rounded-lg overflow-hidden border border-gray-700 text-xs">
+                                <button onclick="setCustomRatio(100)" id="ratioBtn100" class="px-3 py-1 bg-gray-800 text-gray-400">100倍</button>
+                                <button onclick="setCustomRatio(200)" id="ratioBtn200" class="px-3 py-1 bg-gray-800 text-gray-400">200倍</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 守りのステータス (プレイヤー) -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 text-blue-500/5 text-9xl pointer-events-none font-bold">DEF</div>
+                    <div class="flex items-center space-x-2.5 mb-4 border-b border-gray-800 pb-3">
+                        <span class="p-2 rounded-lg bg-blue-500/10 text-blue-400"><i class="fa-solid fa-shield-halved"></i></span>
+                        <div>
+                            <h2 class="font-bold text-lg text-blue-200">プレイヤー防御ステータス</h2>
+                            <p class="text-xs text-gray-400">装備やステータスによる耐性値を設定します</p>
+                        </div>
+                    </div>
+
+                    <!-- MRES部 -->
+                    <div class="bg-blue-950/10 border border-blue-900/20 rounded-xl p-4 mb-4">
+                        <h3 class="text-sm font-bold text-blue-300 mb-3 flex justify-between items-center">
+                            <span><i class="fa-solid fa-bahai mr-1"></i>MRES（魔法精神耐性）計算</span>
+                            <span class="text-[10px] text-gray-400 font-normal">※3の倍数で+5ボーナスが入ります</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                    <label class="font-medium">WISステータス値 (0〜110)</label>
+                                    <span class="font-mono text-blue-400" id="wisVal">100</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="wisSlider" oninput="syncSlider('wisSlider', 'wisInput')" min="0" max="110" step="1" class="flex-1">
+                                    <input type="number" id="wisInput" oninput="updateCalculations('wis')" min="0" max="110" class="w-16 text-center bg-gray-900 border border-gray-700 rounded py-1 text-xs">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                    <label class="font-medium">装備MRES補正値 合計 (0〜100)</label>
+                                    <span class="font-mono text-blue-400" id="mresEquipVal">0</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="mresEquipSlider" oninput="syncSlider('mresEquipSlider', 'mresEquipInput')" min="0" max="100" step="1" class="flex-1">
+                                    <input type="number" id="mresEquipInput" oninput="updateCalculations('mresEquip')" min="0" max="100" class="w-16 text-center bg-gray-900 border border-gray-700 rounded py-1 text-xs">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-blue-900/20 flex flex-wrap justify-between items-center text-xs gap-2">
+                            <div class="text-gray-400">
+                                WIS由来MRES: <span class="text-blue-300 font-mono font-bold" id="wisMresVal">0</span>
+                                <span class="text-[10px] text-gray-500">(ボーナス込)</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">算出された合計MRES:</span>
+                                <span class="text-sm font-bold text-blue-300 font-mono" id="totalMres">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MDEF & 耐性パラメーター -->
+                    <div class="space-y-4">
+                        <!-- MDEF & ゴーレムの魂 -->
+                        <div class="bg-gray-950/40 p-4 rounded-xl border border-gray-800 space-y-3">
+                            <div class="flex justify-between text-xs text-gray-300">
+                                <label class="font-medium">除算MDEF (装備の補正値合計)</label>
+                                <span class="font-mono text-vortex-300" id="mdefVal">0</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="range" id="mdefSlider" oninput="syncSlider('mdefSlider', 'mdefInput')" min="0" max="1000" step="5" class="flex-1">
+                                <input type="number" id="mdefInput" oninput="updateCalculations('mdef')" min="0" max="1000" class="w-20 text-center bg-gray-900 border border-gray-700 rounded py-1 text-sm font-mono">
+                            </div>
+                            <div class="pt-2 border-t border-gray-800/60 flex items-center justify-between">
+                                <span class="text-xs text-gray-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-ghost text-blue-400"></i>ゴーレムの魂Lv5 (MDEF +50)
+                                </span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="golemSoul" onchange="updateCalculations()" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 各種耐性トリオ -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- ボス耐性 -->
+                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
+                                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                    <label class="font-medium text-red-300">ボス耐性</label>
+                                    <span class="font-mono text-red-400" id="bossResistVal">80%</span>
+                                </div>
+                                <input type="range" id="bossResistSlider" oninput="syncResist('bossResistSlider', 'bossResistInput')" min="0" max="95" class="w-full">
+                                <input type="number" id="bossResistInput" oninput="updateCalculations('bossResist')" min="0" max="95" class="w-full mt-1.5 text-center bg-gray-900 border border-gray-800 rounded py-0.5 text-xs">
+                            </div>
+
+                            <!-- 種族耐性 -->
+                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
+                                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                    <label class="font-medium text-emerald-300">種族耐性</label>
+                                    <span class="font-mono text-emerald-400" id="raceResistVal">0%</span>
+                                </div>
+                                <input type="range" id="raceResistSlider" oninput="syncResist('raceResistSlider', 'raceResistInput')" min="0" max="95" class="w-full">
+                                <input type="number" id="raceResistInput" oninput="updateCalculations('raceResist')" min="0" max="95" class="w-full mt-1.5 text-center bg-gray-900 border border-gray-800 rounded py-0.5 text-xs">
+                            </div>
+
+                            <!-- 無属性耐性 -->
+                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
+                                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                    <label class="font-medium text-yellow-500">無属性耐性</label>
+                                    <span class="font-mono text-yellow-500" id="neutralResistVal">80%</span>
+                                </div>
+                                <input type="range" id="neutralResistSlider" oninput="syncResist('neutralResistSlider', 'neutralResistInput')" min="0" max="95" class="w-full">
+                                <input type="number" id="neutralResistInput" oninput="updateCalculations('neutralResist')" min="0" max="95" class="w-full mt-1.5 text-center bg-gray-900 border border-gray-800 rounded py-0.5 text-xs">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- スキル・バフ設定 -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 text-emerald-500/5 text-9xl pointer-events-none font-bold">BUFF</div>
+                    <div class="flex items-center space-x-2.5 mb-4 border-b border-gray-800 pb-3">
+                        <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                        <div>
+                            <h2 class="font-bold text-lg text-emerald-200">スキル・バフ効果</h2>
+                            <p class="text-xs text-gray-400">受けるダメージを軽減する特殊効果を適用します</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- エナジーコート -->
+                        <div class="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                            <div class="flex justify-between text-xs text-gray-300 mb-1.5">
+                                <label class="font-bold text-purple-300"><i class="fa-solid fa-shield-cat mr-1"></i>エナジーコート (EC)</label>
+                                <span class="font-mono text-purple-400" id="ecVal">0%カット</span>
+                            </div>
+                            <input type="range" id="ecSlider" oninput="syncSlider('ecSlider', 'ecInput')" min="0" max="30" step="1" class="w-full">
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">ダメージカット率 (0〜30%)</span>
+                                <input type="number" id="ecInput" oninput="updateCalculations('ec')" min="0" max="30" class="w-14 text-center bg-gray-900 border border-gray-700 rounded py-0.5 text-xs font-mono">
+                            </div>
+                        </div>
+
+                        <!-- ヒメルメズペット & 減少スキル -->
+                        <div class="space-y-4">
+                            <!-- ヒメルメズペット -->
+                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-pink-300 block"><i class="fa-solid fa-dog mr-1"></i>ヒメルメズペット</span>
+                                    <span class="text-[10px] text-gray-500">有りなら固定値で50%カット</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="himmelPet" onchange="updateCalculations()" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- 減少スキル -->
+                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
+                                <label class="text-xs font-bold text-amber-300 block mb-1.5"><i class="fa-solid fa-user-shield mr-1"></i>ダメージ減少スキル</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button onclick="setReduceSkill('none')" id="btnSkillNone" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-gray-700 border border-transparent transition leading-tight">
+                                        なし
+                                    </button>
+                                    <button onclick="setReduceSkill('ironhowling')" id="btnSkillIron" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-red-950/50 border border-transparent transition leading-tight">
+                                        ｱｲｱﾝﾊｳﾘﾝｸﾞ<br><span class="text-[8px] opacity-70">50%カット</span>
+                                    </button>
+                                    <button onclick="setReduceSkill('uzukumaru')" id="btnSkillUzu" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-emerald-950/50 border border-transparent transition leading-tight">
+                                        うずくまる<br><span class="text-[8px] opacity-70">80%カット</span>
+                                    </button>
+                                    <button onclick="setReduceSkill('kongo')" id="btnSkillKongo" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-amber-950/50 border border-transparent transition leading-tight">
+                                        金剛<br><span class="text-[8px] opacity-70">90%カット</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- プレイヤー想定HP設定 -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center space-x-2.5 mb-4 border-b border-gray-800 pb-3">
+                        <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-heart"></i></span>
+                        <div>
+                            <h2 class="font-bold text-lg text-emerald-200">最大HP設定（生死判定用）</h2>
+                            <p class="text-xs text-gray-400">想定されるあなたの最大HPを入力します</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-1">
+                            <input type="range" id="hpSlider" oninput="syncSlider('hpSlider', 'hpInput')" min="10000" max="1500000" step="5000" class="w-full">
+                            <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                                <span>10k</span>
+                                <span>500k</span>
+                                <span>1M</span>
+                                <span>1.5M</span>
+                            </div>
+                        </div>
+                        <div class="w-32">
+                            <input type="number" id="hpInput" oninput="updateCalculations('hp')" min="1" max="5000000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-center font-bold text-emerald-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- シミュレーション結果表示パネル (右側 5カラム) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- 結果サマリー -->
+                <div id="resultCard" class="border rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300">
+                    <!-- 背景のデコレーション -->
+                    <div class="absolute -right-16 -bottom-16 text-9xl font-bold opacity-5 pointer-events-none" id="bgIcon">
+                        <i class="fa-solid fa-skull-crossbones"></i>
+                    </div>
+
+                    <div class="text-center">
+                        <span class="text-xs uppercase tracking-widest font-bold opacity-80" id="resultStatusLabel">生存可否判定</span>
+                        <h2 class="text-3xl md:text-4xl font-black mt-1 mb-4" id="resultStatus">即死</h2>
+                        
+                        <!-- ゲージビジュアル -->
+                        <div class="w-full bg-black/40 rounded-full h-4 p-0.5 border border-white/10 mb-4 overflow-hidden relative">
+                            <div id="damageBar" class="h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+                            <div class="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white font-mono" id="hpPercent">0%</div>
+                        </div>
+
+                        <!-- ダメージ表示 -->
+                        <div class="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3">
+                            <!-- 1Hitダメージ -->
+                            <div class="flex justify-between items-center pb-2 border-b border-gray-800/50">
+                                <div class="text-left">
+                                    <span class="text-xs text-gray-400 block">1Hit 被ダメージ</span>
+                                    <span class="text-[10px] text-vortex-300">(即死・生存判定の基準)</span>
+                                </div>
+                                <span class="text-2xl font-black font-mono text-vortex-300" id="oneHitDamage">0</span>
+                            </div>
+
+                            <!-- 4Hit総被ダメージ -->
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                                    <span>テトラ総被ダメージ (4Hit合計)</span>
+                                    <span>最大HP</span>
+                                </div>
+                                <div class="flex justify-between items-baseline">
+                                    <span class="text-xl font-bold font-mono text-gray-400" id="finalDamage">0</span>
+                                    <span class="text-lg font-bold font-mono text-gray-300" id="displayHp">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-t border-white/5 flex justify-between text-xs font-medium" id="surplusText">
+                                <!-- JSで上回り・下回りテキストを注入 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 確定確殺ラインのアドバイス -->
+                    <div class="mt-4 pt-4 border-t border-white/10 space-y-2 text-xs" id="surviveAdvice">
+                        <!-- 動的にアドバイスが入る -->
+                    </div>
+                </div>
+
+                <!-- 計算プロセスの可視化 -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl">
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="p-2 rounded-lg bg-vortex-500/10 text-vortex-400"><i class="fa-solid fa-calculator"></i></span>
+                            <div>
+                                <h2 class="font-bold text-sm text-vortex-200">ダメージ減衰ロードマップ (1Hit基準)</h2>
+                                <p class="text-[10px] text-gray-400">1Hitあたりのダメージ減少の遷移</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500">RO公式準拠</span>
+                    </div>
+
+                    <!-- 計算ステップ -->
+                    <div class="space-y-3.5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-800">
+                        <!-- ステップ 1: 基本 -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-red-950 text-red-400 flex items-center justify-center font-bold z-10 border border-red-900/50">1</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>基本ダメージ (MATK × ボス倍率)</span>
+                                    <span class="font-mono text-red-400" id="step1Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step1Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 2: MDEF -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-blue-950 text-blue-400 flex items-center justify-center font-bold z-10 border border-blue-900/50">2</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>MDEF 減衰後</span>
+                                    <span class="font-mono text-blue-400" id="step2Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step2Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 3: MRES -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold z-10 border border-indigo-900/50">3</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>MRES 減衰後</span>
+                                    <span class="font-mono text-indigo-400" id="step3Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step3Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 4: ボス耐性 -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-orange-950 text-orange-400 flex items-center justify-center font-bold z-10 border border-orange-900/50">4</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>ボス耐性 適用後</span>
+                                    <span class="font-mono text-orange-400" id="step4Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step4Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 5: 種族耐性 -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold z-10 border border-emerald-900/50">5</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>種族耐性 適用後</span>
+                                    <span class="font-mono text-emerald-400" id="step5Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step5Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 6: 無属性耐性 -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-yellow-950 text-yellow-500 flex items-center justify-center font-bold z-10 border border-yellow-900/50">6</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>無属性耐性 適用後</span>
+                                    <span class="font-mono text-yellow-400" id="step6Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step6Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 7: エナジーコート -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-purple-950 text-purple-400 flex items-center justify-center font-bold z-10 border border-purple-900/50">7</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>エナジーコート 適用後</span>
+                                    <span class="font-mono text-purple-400" id="step7Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step7Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 8: ヒメルメズペット -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-pink-950 text-pink-400 flex items-center justify-center font-bold z-10 border border-pink-900/50">8</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>ヒメルメズペット 適用後</span>
+                                    <span class="font-mono text-pink-400" id="step8Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step8Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 9: 減少スキル -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold z-10 border border-cyan-900/50">9</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>ダメージ減少スキル 適用後</span>
+                                    <span class="font-mono text-cyan-400" id="step9Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step9Formula"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 計算式詳細・説明 -->
+                <div class="bg-gradient-to-b from-gray-900/90 to-gray-950/90 border border-gray-800 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-sm font-bold text-gray-200 mb-2"><i class="fa-solid fa-circle-nodes mr-1 text-vortex-400"></i>計算式仕様</h3>
+                    <div class="text-xs text-gray-400 space-y-2">
+                        <p class="font-mono bg-black/40 p-2 rounded text-[11px] leading-relaxed break-all">
+                            最終総被ダメージ = (1Hitダメージ) × 4Hit<br>
+                            1Hitダメージ = MATK×倍率(100or200) × MDEF残 × MRES残 × ボス耐性残 × 種族耐性残 × 無属性耐性残 × EC残 × ペット残 × スキル残
+                        </p>
+                        <ul class="list-disc pl-4 space-y-1 text-gray-400 text-[11px]">
+                            <li><strong class="text-blue-300">MDEF軽減率:</strong> <code class="font-mono text-gray-200">(1000 + MDEF) ÷ (1000 + MDEF × 10)</code></li>
+                            <li><strong class="text-indigo-300">MRES合計値:</strong> <code class="font-mono text-gray-200">WIS + floor(WIS ÷ 3) × 5 + 装備MRES</code></li>
+                            <li><strong class="text-indigo-300">MRES軽減率:</strong> <code class="font-mono text-gray-200">(2000 + MRES) ÷ (2000 + MRES × 5)</code></li>
+                            <li>各耐性、EC、スキルなどは <code class="font-mono text-gray-200">(100 - 減少%) ÷ 100</code> で残ダメージ率を計算。</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ボスの定義データ
+        const BOSS_PRESETS = [
+            { name: "デミフレイヤ (倍率: 100倍 / MATK: 130,000)", matk: 130000, ratio: 100, isCustom: false },
+            { name: "ベテルギウス (倍率: 200倍 / MATK: 520,000)", matk: 520000, ratio: 200, isCustom: false },
+            { name: "次元犯罪者リゲル [難易度1] (倍率: 200倍 / MATK: 100,000)", matk: 100000, ratio: 200, isCustom: false },
+            { name: "次元犯罪者リゲル [難易度4] (倍率: 200倍 / MATK: 800,000)", matk: 800000, ratio: 200, isCustom: false },
+            { name: "カスタムボス (手動入力)", matk: 150000, ratio: 200, isCustom: true }
+        ];
+
+        // スキル状態管理
+        let currentReduceSkill = "none"; // 'none' | 'ironhowling' | 'uzukumaru' | 'kongo'
+        let currentBossRatio = 200; // 現在のTV倍率 (100 or 200)
+
+        // ページロード時の初期設定
+        window.onload = function() {
+            initBossSelect();
+            resetToDefault();
+        };
+
+        // ボスセレクトボックス初期化
+        function initBossSelect() {
+            const select = document.getElementById("bossSelect");
+            select.innerHTML = "";
+            BOSS_PRESETS.forEach((boss, index) => {
+                const opt = document.createElement("option");
+                opt.value = index;
+                opt.innerText = boss.name;
+                select.appendChild(opt);
+            });
+            // 初期状態はベテルギウス (インデックス 1) を選択
+            select.selectedIndex = 1;
+            onBossChange();
         }
 
-        // === 第2段階 ===
-        while (true) {
-          if (bCount >= 5) {
-            bCount = 0;
-            break;
-          }
-          cost += 10000;
-          if (Math.random() < 0.2) {
-            bCount = 0;
-            break;
-          }
-          bCount++;
-          break; // 戻って第1段階
+        // ボス選択が変更されたとき
+        function onBossChange() {
+            const select = document.getElementById("bossSelect");
+            const boss = BOSS_PRESETS[select.selectedIndex];
+            
+            // MATK同期
+            document.getElementById("bossMatk").value = boss.matk;
+            document.getElementById("bossMatkSlider").value = boss.matk;
+            document.getElementById("bossMatkVal").innerText = Number(boss.matk).toLocaleString();
+
+            // 倍率の制御
+            currentBossRatio = boss.ratio;
+            const badge = document.getElementById("currentRatioBadge");
+            const customWrapper = document.getElementById("customRatioWrapper");
+
+            if (boss.isCustom) {
+                customWrapper.style.display = "flex";
+                badge.innerText = `MATK × 手動設定倍率`;
+                setCustomRatio(boss.ratio);
+            } else {
+                customWrapper.style.display = "none";
+                badge.innerText = `MATK × ${boss.ratio}倍`;
+            }
+
+            updateCalculations();
         }
 
-        if (bCount > 0) continue;
+        // カスタム倍率のトグル
+        function setCustomRatio(ratio) {
+            currentBossRatio = ratio;
+            const btn100 = document.getElementById("ratioBtn100");
+            const btn200 = document.getElementById("ratioBtn200");
 
-        // === 第3段階 ===
-        while (true) {
-          if (cCount >= 5) {
-            cost += 10000;
-            return cost;
-          }
-          cost += 10000;
-          if (Math.random() < 0.1) {
-            return cost;
-          }
-          cCount++;
-          break; // 戻って第1段階
+            btn100.className = "px-3 py-1 bg-gray-800 text-gray-400";
+            btn200.className = "px-3 py-1 bg-gray-800 text-gray-400";
+
+            if (ratio === 100) {
+                btn100.className = "px-3 py-1 bg-vortex-600 text-white font-bold";
+            } else {
+                btn200.className = "px-3 py-1 bg-vortex-600 text-white font-bold";
+            }
+
+            document.getElementById("currentRatioBadge").innerText = `MATK × ${ratio}倍`;
+            updateCalculations();
         }
-      }
-    }
 
-    function runSimulation() {
-      const results = [];
-      for (let i = 0; i < 100; i++) {
-        results.push(simulateGameOnce());
-      }
+        // スライダーとテキストボックスを動的に同期する汎用関数
+        function syncSlider(sliderId, inputId) {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            input.value = slider.value;
+            
+            // 特殊なラベル処理
+            if(sliderId === 'bossMatkSlider') {
+                document.getElementById("bossMatkVal").innerText = Number(slider.value).toLocaleString();
+            }
+            
+            updateCalculations();
+        }
 
-      const sum = results.reduce((a, b) => a + b, 0);
-      const avg = (sum / results.length) / 10000;
-      const max = Math.max(...results) / 10000;
-      const min = Math.min(...results) / 10000;
+        // 耐性用の微調整シンク（%表示用）
+        function syncResist(sliderId, inputId) {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            input.value = slider.value;
+            updateCalculations();
+        }
 
-      const sorted = [...results].sort((a, b) => a - b);
-      const p90 = sorted[Math.floor(0.9 * sorted.length)] / 10000;
+        // 減少スキルの切替
+        function setReduceSkill(skill) {
+            currentReduceSkill = skill;
+            
+            // ボタンのアクティブ表現リセット
+            const btnNone = document.getElementById("btnSkillNone");
+            const btnIron = document.getElementById("btnSkillIron");
+            const btnUzu = document.getElementById("btnSkillUzu");
+            const btnKongo = document.getElementById("btnSkillKongo");
 
-      const output = `
-平均金額: ${avg.toFixed(1)} 万円
-最大金額: ${max.toFixed(1)} 万円
-最小金額: ${min.toFixed(1)} 万円
-90%以下の支払い金額: ${p90.toFixed(1)} 万円
-      `;
+            [btnNone, btnIron, btnUzu, btnKongo].forEach(btn => {
+                btn.className = btn.className.replace(/border-vortex-500|bg-vortex-600\/20/g, "");
+                btn.classList.add("border-transparent");
+            });
 
-      document.getElementById("output").textContent = output;
-    }
-  </script>
+            if (skill === 'none') {
+                btnNone.classList.remove("border-transparent");
+                btnNone.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'ironhowling') {
+                btnIron.classList.remove("border-transparent");
+                btnIron.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'uzukumaru') {
+                btnUzu.classList.remove("border-transparent");
+                btnUzu.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'kongo') {
+                btnKongo.classList.remove("border-transparent");
+                btnKongo.classList.add("border-vortex-500", "bg-vortex-600/20");
+            }
+
+            updateCalculations();
+        }
+
+        // 初期設定リセット
+        function resetToDefault() {
+            // WIS 初期値 100
+            document.getElementById("wisInput").value = 100;
+            document.getElementById("wisSlider").value = 100;
+
+            // 装備MRES 範囲0〜100 初期値0
+            document.getElementById("mresEquipInput").value = 0;
+            document.getElementById("mresEquipSlider").value = 0;
+
+            // MDEF 初期値 0 / ゴーレムの魂 OFF
+            document.getElementById("mdefInput").value = 0;
+            document.getElementById("mdefSlider").value = 0;
+            document.getElementById("golemSoul").checked = false;
+
+            // 各種耐性
+            // ボス耐性: 80%
+            document.getElementById("bossResistInput").value = 80;
+            document.getElementById("bossResistSlider").value = 80;
+
+            // 種族耐性: 0%
+            document.getElementById("raceResistInput").value = 0;
+            document.getElementById("raceResistSlider").value = 0;
+
+            // 無属性耐性: 80%
+            document.getElementById("neutralResistInput").value = 80;
+            document.getElementById("neutralResistSlider").value = 80;
+
+            // EC: 0%
+            document.getElementById("ecInput").value = 0;
+            document.getElementById("ecSlider").value = 0;
+
+            // ペット: OFF
+            document.getElementById("himmelPet").checked = false;
+
+            // スキル: なし
+            setReduceSkill('none');
+
+            // HP初期値
+            document.getElementById("hpInput").value = 200000;
+            document.getElementById("hpSlider").value = 200000;
+
+            updateCalculations();
+        }
+
+        // 手動入力のバリデーション兼同期
+        function validateInputs() {
+            // WIS (0-110)
+            const wis = clamp(parseInt(document.getElementById("wisInput").value) || 0, 0, 110);
+            document.getElementById("wisInput").value = wis;
+            document.getElementById("wisSlider").value = wis;
+            document.getElementById("wisVal").innerText = wis;
+
+            // MRES Equip (0-100)
+            const mresEquip = clamp(parseInt(document.getElementById("mresEquipInput").value) || 0, 0, 100);
+            document.getElementById("mresEquipInput").value = mresEquip;
+            document.getElementById("mresEquipSlider").value = mresEquip;
+            document.getElementById("mresEquipVal").innerText = mresEquip;
+
+            // MDEF (0-1000)
+            const mdef = clamp(parseInt(document.getElementById("mdefInput").value) || 0, 0, 1000);
+            document.getElementById("mdefInput").value = mdef;
+            document.getElementById("mdefSlider").value = mdef;
+            document.getElementById("mdefVal").innerText = mdef;
+
+            // 耐性トリオ (0-95)
+            const bossR = clamp(parseInt(document.getElementById("bossResistInput").value) || 0, 0, 95);
+            document.getElementById("bossResistInput").value = bossR;
+            document.getElementById("bossResistSlider").value = bossR;
+            document.getElementById("bossResistVal").innerText = bossR + "%";
+
+            const raceR = clamp(parseInt(document.getElementById("raceResistInput").value) || 0, 0, 95);
+            document.getElementById("raceResistInput").value = raceR;
+            document.getElementById("raceResistSlider").value = raceR;
+            document.getElementById("raceResistVal").innerText = raceR + "%";
+
+            const neutR = clamp(parseInt(document.getElementById("neutralResistInput").value) || 0, 0, 95);
+            document.getElementById("neutralResistInput").value = neutR;
+            document.getElementById("neutralResistSlider").value = neutR;
+            document.getElementById("neutralResistVal").innerText = neutR + "%";
+
+            // EC (0-30)
+            const ec = clamp(parseInt(document.getElementById("ecInput").value) || 0, 0, 30);
+            document.getElementById("ecInput").value = ec;
+            document.getElementById("ecSlider").value = ec;
+            document.getElementById("ecVal").innerText = ec + "%カット";
+
+            // HP (10k - 5M)
+            const hp = clamp(parseInt(document.getElementById("hpInput").value) || 10000, 1000, 5000000);
+            document.getElementById("hpInput").value = hp;
+            document.getElementById("hpSlider").value = hp;
+            document.getElementById("displayHp").innerText = hp.toLocaleString();
+
+            // MATK (1 - 1.5M)
+            const matk = clamp(parseInt(document.getElementById("bossMatk").value) || 1000, 1, 1500000);
+            document.getElementById("bossMatk").value = matk;
+            document.getElementById("bossMatkSlider").value = matk;
+            document.getElementById("bossMatkVal").innerText = matk.toLocaleString();
+        }
+
+        function clamp(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        // メイン計算処理
+        function updateCalculations(changedSrc) {
+            validateInputs();
+
+            // 各種数値取得
+            const matk = parseFloat(document.getElementById("bossMatk").value) || 0;
+            const wis = parseFloat(document.getElementById("wisInput").value) || 0;
+            const mresEquip = parseFloat(document.getElementById("mresEquipInput").value) || 0;
+            const mdef = parseFloat(document.getElementById("mdefInput").value) || 0;
+            const golemSoul = document.getElementById("golemSoul").checked;
+            
+            const bossResist = parseFloat(document.getElementById("bossResistInput").value) || 0;
+            const raceResist = parseFloat(document.getElementById("raceResistInput").value) || 0;
+            const neutralResist = parseFloat(document.getElementById("neutralResistInput").value) || 0;
+            const ec = parseFloat(document.getElementById("ecInput").value) || 0;
+            const himmelPet = document.getElementById("himmelPet").checked;
+            const hp = parseFloat(document.getElementById("hpInput").value) || 1;
+
+            // 1. 基本ダメージ計算 (ボス固有の倍率を適用)
+            const baseDamage = matk * currentBossRatio;
+
+            // 2. MDEF軽減率計算 (ゴーレムの魂を含む)
+            const finalMdef = mdef + (golemSoul ? 50 : 0);
+            const mdefRate = (1000 + finalMdef) / (1000 + finalMdef * 10);
+            const mdefDamage = baseDamage * mdefRate;
+
+            // 3. MRES軽減率計算
+            // WIS由来のMRES = WIS ＋ 3の倍数ごとにボーナス+5 (Math.floor(WIS / 3) * 5)
+            const wisMres = wis + Math.floor(wis / 3) * 5;
+            document.getElementById("wisMresVal").innerText = wisMres;
+
+            // 合計MRES = WIS由来MRES + 装備MRES
+            const totalMres = wisMres + mresEquip;
+            document.getElementById("totalMres").innerText = totalMres;
+
+            // (2000 + Mres) ÷ (2000 + Mres × 5)
+            const mresRate = (2000 + totalMres) / (2000 + totalMres * 5);
+            const mresDamage = mdefDamage * mresRate;
+
+            // 4. ボス耐性
+            const bossResistRate = (100 - bossResist) / 100;
+            const bossResistDamage = mresDamage * bossResistRate;
+
+            // 5. 種族耐性
+            const raceResistRate = (100 - raceResist) / 100;
+            const raceResistDamage = bossResistDamage * raceResistRate;
+
+            // 6. 無属性耐性
+            const neutralResistRate = (100 - neutralResist) / 100;
+            const neutralResistDamage = raceResistDamage * neutralResistRate;
+
+            // 7. エナジーコート
+            const ecRate = (100 - ec) / 100;
+            const ecDamage = neutralResistDamage * ecRate;
+
+            // 8. ヒメルメズペット
+            const petRate = himmelPet ? 0.5 : 1.0;
+            const petDamage = ecDamage * petRate;
+
+            // 9. 減少スキル
+            let skillRate = 1.0;
+            if (currentReduceSkill === 'ironhowling') skillRate = 0.5; // 50%カット
+            if (currentReduceSkill === 'uzukumaru') skillRate = 0.2; // 80%カット
+            if (currentReduceSkill === 'kongo') skillRate = 0.1; // 90%カット
+            
+            // 1Hitあたりのダメージ
+            const oneHitDamage = Math.round(petDamage * skillRate);
+            
+            // 総被ダメージ (1Hitダメージ × 4Hit)
+            const finalDamage = oneHitDamage * 4;
+
+            // UI更新: 最終ダメージ表示
+            document.getElementById("oneHitDamage").innerText = oneHitDamage.toLocaleString();
+            document.getElementById("finalDamage").innerText = finalDamage.toLocaleString();
+
+            // UI更新: ロードマップ数値＆数式
+            updateStepUI(1, baseDamage, `MATK: ${matk.toLocaleString()} × ${currentBossRatio}倍`);
+            
+            const golemText = golemSoul ? ` (ゴーレムの魂込み)` : ``;
+            updateStepUI(2, mdefDamage, `残率: ${(mdefRate * 100).toFixed(2)}% | (1000 + ${finalMdef}${golemText}) / (1000 + ${finalMdef}×10)`);
+            updateStepUI(3, mresDamage, `残率: ${(mresRate * 100).toFixed(2)}% | (2000 + ${totalMres}) / (2000 + ${totalMres * 5})`);
+            updateStepUI(4, bossResistDamage, `ボス耐性: -${bossResist}% (残率: ${(bossResistRate * 100).toFixed(0)}%)`);
+            updateStepUI(5, raceResistDamage, `種族耐性: -${raceResist}% (残率: ${(raceResistRate * 100).toFixed(0)}%)`);
+            updateStepUI(6, neutralResistDamage, `無属性耐性: -${neutralResist}% (残率: ${(neutralResistRate * 100).toFixed(0)}%)`);
+            
+            const ecFormulaText = `EC: -${ec}% (残率: ${(ecRate * 100).toFixed(0)}%)`;
+            updateStepUI(7, ecDamage, ecFormulaText);
+            
+            updateStepUI(8, petDamage, himmelPet ? "ペット有り: -50%" : "ペット無し: 補正なし");
+            
+            let skillName = "適用なし";
+            if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-50%)";
+            if(currentReduceSkill === 'uzukumaru') skillName = "うずくまる (-80%)";
+            if(currentReduceSkill === 'kongo') skillName = "金剛 (-90%)";
+            updateStepUI(9, oneHitDamage, `スキル: ${skillName}`);
+
+            // 生死判定 & カードカラー・アニメーション切替 (1Hitダメージ基準の4段階)
+            const resultCard = document.getElementById("resultCard");
+            const resultStatus = document.getElementById("resultStatus");
+            const resultStatusLabel = document.getElementById("resultStatusLabel");
+            const damageBar = document.getElementById("damageBar");
+            const hpPercentText = document.getElementById("hpPercent");
+            const surplusText = document.getElementById("surplusText");
+            const bgIcon = document.getElementById("bgIcon");
+
+            const oneHitPercent = (oneHitDamage / hp) * 100;
+            const barPercent = Math.min(100, oneHitPercent);
+
+            if (oneHitPercent >= 100) {
+                // 1. 即死 (100%以上)
+                resultCard.className = "border rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-red-950/80 via-gray-950/90 to-gray-950/90 border-red-500/50";
+                resultStatus.innerText = "即死します";
+                resultStatus.className = "text-3xl md:text-4xl font-black mt-1 mb-4 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]";
+                resultStatusLabel.className = "text-xs uppercase tracking-widest font-bold text-red-400";
+                resultStatusLabel.innerText = "生存可否判定：危険度【極大】";
+                
+                damageBar.style.width = "100%";
+                damageBar.className = "h-full rounded-full transition-all duration-500 bg-gradient-to-r from-red-600 to-rose-500";
+                hpPercentText.innerText = `1Hit割合: ${oneHitPercent.toFixed(1)}% (許容量超過)`;
+                
+                const overDmg = oneHitDamage - hp;
+                surplusText.innerHTML = `<span>1Hit過剰分</span><span class="text-red-500 font-bold font-mono">-${overDmg.toLocaleString()}</span>`;
+                bgIcon.innerHTML = `<i class="fa-solid fa-skull-crossbones text-red-500/10 text-9xl"></i>`;
+            } else if (oneHitPercent >= 50) {
+                // 2. きつい (50%〜99%)
+                resultCard.className = "border rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-amber-950/80 via-gray-950/90 to-gray-950/90 border-amber-500/50";
+                resultStatus.innerText = "きつい（要回復）";
+                resultStatus.className = "text-3xl md:text-4xl font-black mt-1 mb-4 text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]";
+                resultStatusLabel.className = "text-xs uppercase tracking-widest font-bold text-amber-500";
+                resultStatusLabel.innerText = "生存可否判定：危険度【大】";
+
+                damageBar.style.width = barPercent + "%";
+                damageBar.className = "h-full rounded-full transition-all duration-500 bg-gradient-to-r from-amber-500 to-orange-400";
+                hpPercentText.innerText = `1Hit割合: ${oneHitPercent.toFixed(1)}% (要高速回復)`;
+
+                const leftHp = hp - oneHitDamage;
+                surplusText.innerHTML = `<span>1Hit耐え後の残りHP</span><span class="text-amber-400 font-bold font-mono">+${leftHp.toLocaleString()}</span>`;
+                bgIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500/10 text-9xl"></i>`;
+            } else if (oneHitPercent >= 25) {
+                // 3. 生きれる (25%〜49%)
+                resultCard.className = "border rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-blue-950/80 via-gray-950/90 to-gray-950/90 border-blue-500/50";
+                resultStatus.innerText = "生きられます";
+                resultStatus.className = "text-3xl md:text-4xl font-black mt-1 mb-4 text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]";
+                resultStatusLabel.className = "text-xs uppercase tracking-widest font-bold text-blue-500";
+                resultStatusLabel.innerText = "生存可否判定：危険度【中】";
+
+                damageBar.style.width = barPercent + "%";
+                damageBar.className = "h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-indigo-400";
+                hpPercentText.innerText = `1Hit割合: ${oneHitPercent.toFixed(1)}% (生存圏内)`;
+
+                const leftHp = hp - oneHitDamage;
+                surplusText.innerHTML = `<span>1Hit耐え後の残りHP</span><span class="text-blue-400 font-bold font-mono">+${leftHp.toLocaleString()}</span>`;
+                bgIcon.innerHTML = `<i class="fa-solid fa-shield text-blue-500/10 text-9xl"></i>`;
+            } else {
+                // 4. 安定 (25%未満)
+                resultCard.className = "border rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-emerald-950/80 via-gray-950/90 to-gray-950/90 border-emerald-500/50";
+                resultStatus.innerText = "安定（安全圏）";
+                resultStatus.className = "text-3xl md:text-4xl font-black mt-1 mb-4 text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                resultStatusLabel.className = "text-xs uppercase tracking-widest font-bold text-emerald-500";
+                resultStatusLabel.innerText = "生存可否判定：危険度【極小】";
+
+                damageBar.style.width = barPercent + "%";
+                damageBar.className = "h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 to-teal-400";
+                hpPercentText.innerText = `1Hit割合: ${oneHitPercent.toFixed(1)}% (極めて安全)`;
+
+                const leftHp = hp - oneHitDamage;
+                surplusText.innerHTML = `<span>1Hit耐え後の残りHP</span><span class="text-emerald-400 font-bold font-mono">+${leftHp.toLocaleString()}</span>`;
+                bgIcon.innerHTML = `<i class="fa-solid fa-heart-shield text-emerald-500/10 text-9xl"></i>`;
+            }
+
+            // 対策アドバイザーの生成
+            generateAdvice(oneHitDamage, hp, bossResist, finalMdef);
+        }
+
+        // ステップUI更新ヘルパー
+        function updateStepUI(stepNum, damage, formula) {
+            document.getElementById(`step${stepNum}Dmg`).innerText = Math.round(damage).toLocaleString();
+            document.getElementById(`step${stepNum}Formula`).innerText = formula;
+        }
+
+        // 対策アドバイザーの構築
+        function generateAdvice(oneHitDmg, hp, currentBossResist, currentMdef) {
+            const adviceContainer = document.getElementById("surviveAdvice");
+            adviceContainer.innerHTML = "";
+
+            const oneHitPercent = (oneHitDmg / hp) * 100;
+
+            if (oneHitPercent < 25) {
+                adviceContainer.innerHTML = `
+                    <div class="bg-emerald-950/30 border border-emerald-900/30 rounded-lg p-3 text-emerald-300">
+                        <p class="font-bold mb-1"><i class="fa-solid fa-circle-check mr-1"></i>シミュレーション大成功！</p>
+                        <p class="text-[11px] leading-relaxed">1Hitあたりの被ダメージがHPの25%未満（安全圏）に抑えられています。回復剤連打をするまでもなく、悠々とテトラボルテックスを耐え抜くことができます！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let adviceTitle = "";
+            let adviceDesc = "";
+            let targetDmg = hp; // 目標1Hit被弾値（即死回避）
+            
+            if (oneHitPercent >= 100) {
+                adviceTitle = `<i class="fa-solid fa-triangle-exclamation mr-1 animate-pulse"></i>テトラを許すな！1Hit即死を回避するアドバイス`;
+                adviceDesc = `あと <strong class="text-red-400 font-mono text-xs">${(100 - (hp / oneHitDmg) * 100).toFixed(1)}%</strong> のダメージカット、またはHP拡張で即死を免れます。`;
+                targetDmg = hp - 1; // 1HitがHPを下回る目標値
+            } else {
+                adviceTitle = `<i class="fa-solid fa-circle-info mr-1"></i>さらなる安定へ！1Hit25%未満(安全圏)を目指すアドバイス`;
+                adviceDesc = `あと <strong class="text-blue-400 font-mono text-xs">${(100 - ((hp * 0.25) / oneHitDmg) * 100).toFixed(1)}%</strong> ダメージカットできれば、無風の「安定」域へ到達します。`;
+                targetDmg = hp * 0.25; // 25%未満の安全域目標値
+            }
+
+            // ボス耐性で目標を達成するために必要な値
+            const targetBossResist = Math.ceil(100 - (100 - currentBossResist) * (targetDmg / oneHitDmg));
+            let bossResistText = "到達不可";
+            if (targetBossResist <= 95) {
+                bossResistText = `${targetBossResist}%にする (現在: ${currentBossResist}%)`;
+            } else {
+                bossResistText = "ボス耐性(上限95%)のみでは困難";
+            }
+
+            // MDEFで目標を達成するために必要な値
+            const currentMdefRate = (1000 + currentMdef) / (1000 + currentMdef * 10);
+            const targetMdefRate = currentMdefRate * (targetDmg / oneHitDmg);
+            let targetMdefText = "到達不可（耐性を積んでください）";
+            if (targetMdefRate * 10 > 1) {
+                const requiredMdef = Math.ceil(1000 * (1 - targetMdefRate) / (10 * targetMdefRate - 1));
+                if (requiredMdef > 0 && requiredMdef <= 1000) {
+                    targetMdefText = `${requiredMdef} (現在: ${currentMdef})`;
+                } else if (requiredMdef > 1000) {
+                    targetMdefText = "1,000以上（耐性が足りていません）";
+                }
+            }
+
+            adviceContainer.innerHTML = `
+                <div class="${oneHitPercent >= 100 ? 'bg-red-950/30 border border-red-900/30' : 'bg-blue-950/30 border border-blue-900/30'} rounded-lg p-3 space-y-2">
+                    <p class="font-bold ${oneHitPercent >= 100 ? 'text-red-300' : 'text-blue-300'} mb-1">${adviceTitle}</p>
+                    <p class="text-[11px] text-gray-300">${adviceDesc}</p>
+                    <div class="space-y-1 text-[11px] text-gray-400">
+                        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+                            <span>目安：ボス耐性を変更する</span>
+                            <span class="text-amber-300 font-bold font-mono">${bossResistText}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+                            <span>目安：除算MDEFを変更する</span>
+                            <span class="text-amber-300 font-bold font-mono">${targetMdefText}</span>
+                        </div>
+                        <div class="flex justify-between pb-1">
+                            <span>目安：最大HPを増やす</span>
+                            <span class="text-amber-300 font-bold font-mono">${Math.ceil(oneHitDmg * (oneHitPercent >= 100 ? 1 : 4)).toLocaleString()} 以上にする</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+
 </body>
 </html>
-
