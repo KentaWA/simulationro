@@ -268,7 +268,7 @@
                         <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
                         <div>
                             <h2 class="font-bold text-lg text-emerald-200">スキル・バフ効果</h2>
-                            <p class="text-xs text-gray-400">受けるダメージを軽減する特殊効果を適用します</p>
+                            <p class="text-xs text-gray-400">受けるダメージを軽減する特殊効果を適用します（複数重ね掛け可能）</p>
                         </div>
                     </div>
 
@@ -286,24 +286,39 @@
                             </div>
                         </div>
 
-                        <!-- ヒメルメズペット & 減少スキル -->
+                        <!-- 他のスキル類 -->
                         <div class="space-y-4">
-                            <!-- ヒメルメズペット -->
-                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs font-bold text-pink-300 block"><i class="fa-solid fa-dog mr-1"></i>ヒメルメズペット</span>
-                                    <span class="text-[10px] text-gray-500">有りなら固定値で50%カット</span>
+                            <!-- 独立バフエリア（ヒメルメズペット＆アンチマジック） -->
+                            <div class="grid grid-cols-1 gap-2.5">
+                                <!-- ヒメルメズペット -->
+                                <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-xs font-bold text-pink-300 block"><i class="fa-solid fa-dog mr-1"></i>ヒメルメズペット</span>
+                                        <span class="text-[10px] text-gray-500">有りなら固定値で50%カット</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="himmelPet" onchange="updateCalculations()" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                    </label>
                                 </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="himmelPet" onchange="updateCalculations()" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
-                                </label>
+
+                                <!-- アンチマジック（独立） -->
+                                <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-xs font-bold text-blue-300 block"><i class="fa-solid fa-shield-halved mr-1"></i>アンチマジックLv3</span>
+                                        <span class="text-[10px] text-gray-500">有りなら魔法ダメージを60%カット</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="antiMagic" onchange="updateCalculations()" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
                             </div>
 
-                            <!-- 減少スキル -->
+                            <!-- 減少スキル（排他選択） -->
                             <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
-                                <label class="text-xs font-bold text-amber-300 block mb-1.5"><i class="fa-solid fa-user-shield mr-1"></i>ダメージ減少スキル</label>
-                                <div class="grid grid-cols-4 gap-2">
+                                <label class="text-xs font-bold text-amber-300 block mb-1.5"><i class="fa-solid fa-user-shield mr-1"></i>ダメージ減少スキル（いずれか1つ適用）</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5">
                                     <button onclick="setReduceSkill('none')" id="btnSkillNone" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-gray-700 border border-transparent transition leading-tight">
                                         なし
                                     </button>
@@ -515,15 +530,27 @@
                             </div>
                         </div>
 
-                        <!-- ステップ 9: 減少スキル -->
+                        <!-- ステップ 9: アンチマジック -->
                         <div class="flex items-start space-x-3 text-xs relative">
-                            <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold z-10 border border-cyan-900/50">9</div>
+                            <div class="w-6 h-6 rounded-full bg-blue-950 text-blue-400 flex items-center justify-center font-bold z-10 border border-blue-900/50">9</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-gray-300 font-semibold">
+                                    <span>アンチマジック 適用後</span>
+                                    <span class="font-mono text-blue-400" id="step9Dmg">0</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500" id="step9Formula"></p>
+                            </div>
+                        </div>
+
+                        <!-- ステップ 10: 減少スキル -->
+                        <div class="flex items-start space-x-3 text-xs relative">
+                            <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold z-10 border border-cyan-900/50">10</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
                                     <span>ダメージ減少スキル 適用後</span>
-                                    <span class="font-mono text-cyan-400" id="step9Dmg">0</span>
+                                    <span class="font-mono text-cyan-400" id="step10Dmg">0</span>
                                 </div>
-                                <p class="text-[10px] text-gray-500" id="step9Formula"></p>
+                                <p class="text-[10px] text-gray-500" id="step10Formula"></p>
                             </div>
                         </div>
                     </div>
@@ -535,7 +562,7 @@
                     <div class="text-xs text-gray-400 space-y-2">
                         <p class="font-mono bg-black/40 p-2 rounded text-[11px] leading-relaxed break-all">
                             最終総被ダメージ = (1Hitダメージ) × 4Hit<br>
-                            1Hitダメージ = MATK×倍率(100or200) × MDEF残 × MRES残 × ボス耐性残 × 種族耐性残 × 無属性耐性残 × EC残 × ペット残 × スキル残
+                            1Hitダメージ = MATK×倍率(100or200) × MDEF残 × MRES残 × ボス耐性残 × 種族耐性残 × 無属性耐性残 × EC残 × ペット残 × アンチマジック残 × スキル残
                         </p>
                         <ul class="list-disc pl-4 space-y-1 text-gray-400 text-[11px]">
                             <li><strong class="text-blue-300">MDEF軽減率:</strong> <code class="font-mono text-gray-200">(1000 + MDEF) ÷ (1000 + MDEF × 10)</code></li>
@@ -556,8 +583,7 @@
         const BOSS_PRESETS = [
             { name: "デミフレイヤ (倍率: 100倍 / MATK: 130,000)", matk: 130000, ratio: 100, isCustom: false },
             { name: "ベテルギウス (倍率: 200倍 / MATK: 520,000)", matk: 520000, ratio: 200, isCustom: false },
-            { name: "次元犯罪者リゲル [難易度1] (倍率: 200倍 / MATK: 100,000)", matk: 100000, ratio: 200, isCustom: false },
-            { name: "次元犯罪者リゲル [難易度4] (倍率: 200倍 / MATK: 800,000)", matk: 800000, ratio: 200, isCustom: false },
+            { name: "リゲル (倍率: 200倍 / MATK: 100,000)", matk: 100000, ratio: 200, isCustom: false },
             { name: "カスタムボス (手動入力)", matk: 150000, ratio: 200, isCustom: true }
         ];
 
@@ -718,8 +744,9 @@
             document.getElementById("ecInput").value = 0;
             document.getElementById("ecSlider").value = 0;
 
-            // ペット: OFF
+            // ペット & アンチマジック: OFF
             document.getElementById("himmelPet").checked = false;
+            document.getElementById("antiMagic").checked = false;
 
             // スキル: なし
             setReduceSkill('none');
@@ -806,6 +833,7 @@
             const neutralResist = parseFloat(document.getElementById("neutralResistInput").value) || 0;
             const ec = parseFloat(document.getElementById("ecInput").value) || 0;
             const himmelPet = document.getElementById("himmelPet").checked;
+            const antiMagic = document.getElementById("antiMagic").checked;
             const hp = parseFloat(document.getElementById("hpInput").value) || 1;
 
             // 1. 基本ダメージ計算 (ボス固有の倍率を適用)
@@ -849,14 +877,18 @@
             const petRate = himmelPet ? 0.5 : 1.0;
             const petDamage = ecDamage * petRate;
 
-            // 9. 減少スキル
+            // 9. アンチマジック (独立・60%カット)
+            const antiMagicRate = antiMagic ? 0.4 : 1.0;
+            const antiMagicDamage = petDamage * antiMagicRate;
+
+            // 10. 減少スキル
             let skillRate = 1.0;
             if (currentReduceSkill === 'ironhowling') skillRate = 0.5; // 50%カット
-            if (currentReduceSkill === 'uzukumaru') skillRate = 0.2; // 80%カット
-            if (currentReduceSkill === 'kongo') skillRate = 0.1; // 90%カット
+            if (currentReduceSkill === 'uzukumaru') skillRate = 0.2;   // 80%カット
+            if (currentReduceSkill === 'kongo') skillRate = 0.1;       // 90%カット
             
             // 1Hitあたりのダメージ
-            const oneHitDamage = Math.round(petDamage * skillRate);
+            const oneHitDamage = Math.round(antiMagicDamage * skillRate);
             
             // 総被ダメージ (1Hitダメージ × 4Hit)
             const finalDamage = oneHitDamage * 4;
@@ -879,12 +911,13 @@
             updateStepUI(7, ecDamage, ecFormulaText);
             
             updateStepUI(8, petDamage, himmelPet ? "ペット有り: -50%" : "ペット無し: 補正なし");
+            updateStepUI(9, antiMagicDamage, antiMagic ? "アンチマジック有り: -60%" : "アンチマジック無し: 補正なし");
             
             let skillName = "適用なし";
             if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-50%)";
             if(currentReduceSkill === 'uzukumaru') skillName = "うずくまる (-80%)";
             if(currentReduceSkill === 'kongo') skillName = "金剛 (-90%)";
-            updateStepUI(9, oneHitDamage, `スキル: ${skillName}`);
+            updateStepUI(10, oneHitDamage, `スキル: ${skillName}`);
 
             // 生死判定 & カードカラー・アニメーション切替 (1Hitダメージ基準の4段階)
             const resultCard = document.getElementById("resultCard");
@@ -1041,6 +1074,7 @@
                             <span class="text-amber-300 font-bold font-mono">${Math.ceil(oneHitDmg * (oneHitPercent >= 100 ? 1 : 4)).toLocaleString()} 以上にする</span>
                         </div>
                     </div>
+                    <p class="text-[10px] text-gray-500 italic mt-1">※その他、ヒメルメズペットの同伴や、アンチマジック/アイアンハウリング/うずくまる/金剛を起動することで容易に突破可能です。</p>
                 </div>
             `;
         }
