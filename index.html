@@ -303,15 +303,21 @@
                             <!-- 減少スキル（競合・上書きルール：いずれか1つ適用） -->
                             <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800">
                                 <label class="text-xs font-bold text-amber-300 block mb-1.5"><i class="fa-solid fa-user-shield mr-1"></i>ダメージ減少スキル（競合関係：いずれか1つのみ適用）</label>
-                                <div class="grid grid-cols-2 md:grid-cols-5 gap-1.5">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
                                     <button onclick="setReduceSkill('none')" id="btnSkillNone" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-gray-700 border border-transparent transition leading-tight">
                                         なし
                                     </button>
                                     <button onclick="setReduceSkill('ironhowling')" id="btnSkillIron" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-red-950/50 border border-transparent transition leading-tight">
                                         ｱｲｱﾝﾊｳﾘﾝｸﾞ<br><span class="text-[8px] opacity-70">40%カット</span>
                                     </button>
-                                    <button onclick="setReduceSkill('antimagic')" id="btnSkillAnti" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-blue-950/50 border border-transparent transition leading-tight">
-                                        ｱﾝﾁﾏｼﾞｯｸ<br><span class="text-[8px] opacity-70">60%カット</span>
+                                    <button onclick="setReduceSkill('antimagic1')" id="btnSkillAnti1" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-blue-950/50 border border-transparent transition leading-tight">
+                                        ｱﾝﾁﾏｼﾞｯｸLv1<br><span class="text-[8px] opacity-70">20%カット</span>
+                                    </button>
+                                    <button onclick="setReduceSkill('antimagic2')" id="btnSkillAnti2" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-blue-950/50 border border-transparent transition leading-tight">
+                                        ｱﾝﾁﾏｼﾞｯｸLv2<br><span class="text-[8px] opacity-70">40%カット</span>
+                                    </button>
+                                    <button onclick="setReduceSkill('antimagic3')" id="btnSkillAnti3" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-blue-950/50 border border-transparent transition leading-tight">
+                                        ｱﾝﾁﾏｼﾞｯｸLv3<br><span class="text-[8px] opacity-70">60%カット</span>
                                     </button>
                                     <button onclick="setReduceSkill('uzukumaru')" id="btnSkillUzu" class="py-1 px-1 text-[10px] font-medium rounded-lg bg-gray-800 hover:bg-emerald-950/50 border border-transparent transition leading-tight">
                                         うずくまる<br><span class="text-[8px] opacity-70">80%カット</span>
@@ -439,7 +445,7 @@
                             <div class="w-6 h-6 rounded-full bg-blue-950 text-blue-400 flex items-center justify-center font-bold z-10 border border-blue-900/50">2</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
-                                    <span>MDEF 減衰后</span>
+                                    <span>MDEF 減衰</span>
                                     <span class="font-mono text-blue-400" id="step2Dmg">0</span>
                                 </div>
                                 <p class="text-[10px] text-gray-500" id="step2Formula"></p>
@@ -451,7 +457,7 @@
                             <div class="w-6 h-6 rounded-full bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold z-10 border border-indigo-900/50">3</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
-                                    <span>MRES 減衰后</span>
+                                    <span>MRES 減衰</span>
                                     <span class="font-mono text-indigo-400" id="step3Dmg">0</span>
                                 </div>
                                 <p class="text-[10px] text-gray-500" id="step3Formula"></p>
@@ -559,12 +565,14 @@
         const BOSS_PRESETS = [
             { name: "デミフレイヤ (倍率: 100倍 / MATK: 130,000)", matk: 130000, ratio: 100, isCustom: false },
             { name: "ベテルギウス (倍率: 200倍 / MATK: 520,000)", matk: 520000, ratio: 200, isCustom: false },
-            { name: "リゲル (倍率: 200倍 / MATK: 100,000)", matk: 100000, ratio: 200, isCustom: false },
+            { name: "リゲル★ (倍率: 200倍 / MATK: 100,000)", matk: 100000, ratio: 200, isCustom: false },
+            { name: "リゲル★★ (倍率: 200倍 / MATK: 400,000)", matk: 400000, ratio: 200, isCustom: false },
+            { name: "リゲル★★★以上 (倍率: 200倍 / MATK: 800,000)", matk: 800000, ratio: 200, isCustom: false },
             { name: "カスタムボス (手動入力)", matk: 150000, ratio: 200, isCustom: true }
         ];
 
         // スキル状態管理
-        let currentReduceSkill = "none"; // 'none' | 'ironhowling' | 'antimagic' | 'uzukumaru' | 'kongo'
+        let currentReduceSkill = "none"; // 'none' | 'ironhowling' | 'antimagic1' | 'antimagic2' | 'antimagic3' | 'uzukumaru' | 'kongo'
         let currentBossRatio = 200; // 現在のTV倍率 (100 or 200)
 
         // ページロード時の初期設定
@@ -663,11 +671,13 @@
             // ボタンのアクティブ表現リセット
             const btnNone = document.getElementById("btnSkillNone");
             const btnIron = document.getElementById("btnSkillIron");
-            const btnAnti = document.getElementById("btnSkillAnti");
+            const btnAnti1 = document.getElementById("btnSkillAnti1");
+            const btnAnti2 = document.getElementById("btnSkillAnti2");
+            const btnAnti3 = document.getElementById("btnSkillAnti3");
             const btnUzu = document.getElementById("btnSkillUzu");
             const btnKongo = document.getElementById("btnSkillKongo");
 
-            [btnNone, btnIron, btnAnti, btnUzu, btnKongo].forEach(btn => {
+            [btnNone, btnIron, btnAnti1, btnAnti2, btnAnti3, btnUzu, btnKongo].forEach(btn => {
                 btn.className = btn.className.replace(/border-vortex-500|bg-vortex-600\/20/g, "");
                 btn.classList.add("border-transparent");
             });
@@ -678,9 +688,15 @@
             } else if (skill === 'ironhowling') {
                 btnIron.classList.remove("border-transparent");
                 btnIron.classList.add("border-vortex-500", "bg-vortex-600/20");
-            } else if (skill === 'antimagic') {
-                btnAnti.classList.remove("border-transparent");
-                btnAnti.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'antimagic1') {
+                btnAnti1.classList.remove("border-transparent");
+                btnAnti1.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'antimagic2') {
+                btnAnti2.classList.remove("border-transparent");
+                btnAnti2.classList.add("border-vortex-500", "bg-vortex-600/20");
+            } else if (skill === 'antimagic3') {
+                btnAnti3.classList.remove("border-transparent");
+                btnAnti3.classList.add("border-vortex-500", "bg-vortex-600/20");
             } else if (skill === 'uzukumaru') {
                 btnUzu.classList.remove("border-transparent");
                 btnUzu.classList.add("border-vortex-500", "bg-vortex-600/20");
@@ -858,7 +874,9 @@
             // 9. 減少スキル (最も高い軽減率スキルを排他選択)
             let skillRate = 1.0;
             if (currentReduceSkill === 'ironhowling') skillRate = 0.6; // 40%カット
-            if (currentReduceSkill === 'antimagic') skillRate = 0.4;    // 60%カット
+            if (currentReduceSkill === 'antimagic1') skillRate = 0.8;  // 20%カット
+            if (currentReduceSkill === 'antimagic2') skillRate = 0.6;  // 40%カット
+            if (currentReduceSkill === 'antimagic3') skillRate = 0.4;  // 60%カット
             if (currentReduceSkill === 'uzukumaru') skillRate = 0.2;   // 80%カット
             if (currentReduceSkill === 'kongo') skillRate = 0.1;       // 90%カット
             
@@ -889,7 +907,9 @@
             
             let skillName = "適用なし";
             if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-40%)";
-            if(currentReduceSkill === 'antimagic') skillName = "ｱﾝﾁﾏｼﾞｯｸ (-60%)";
+            if(currentReduceSkill === 'antimagic1') skillName = "ｱﾝﾁﾏｼﾞｯｸLv1 (-20%)";
+            if(currentReduceSkill === 'antimagic2') skillName = "ｱﾝﾁﾏｼﾞｯｸLv2 (-40%)";
+            if(currentReduceSkill === 'antimagic3') skillName = "ｱﾝﾁﾏｼﾞｯｸLv3 (-60%)";
             if(currentReduceSkill === 'uzukumaru') skillName = "うずくまる (-80%)";
             if(currentReduceSkill === 'kongo') skillName = "金剛 (-90%)";
             updateStepUI(9, oneHitDamage, `スキル: ${skillName}`);
