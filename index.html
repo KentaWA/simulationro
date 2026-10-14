@@ -288,16 +288,34 @@
 
                         <!-- 他のスキル類 -->
                         <div class="space-y-4">
-                            <!-- 独立バフエリア（ヒメルメズペットのみ独立） -->
-                            <div class="bg-gray-950/50 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs font-bold text-pink-300 block"><i class="fa-solid fa-dog mr-1"></i>ヒメルメズペット</span>
-                                    <span class="text-[10px] text-gray-500">有りなら固定値で50%カット</span>
+                            <!-- テトラボルテックス耐性エリア -->
+                            <div class="bg-gray-950/50 p-3.5 rounded-xl border border-gray-800 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-pink-300 block"><i class="fa-solid fa-shield-virus mr-1"></i>テトラボルテックス耐性</span>
+                                    <span class="text-[10px] text-pink-400 font-mono font-bold" id="tvResistTotalVal">0%カット</span>
                                 </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="himmelPet" onchange="updateCalculations()" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
-                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    <label class="flex items-center justify-between bg-gray-900/80 p-2.5 rounded-lg border border-gray-800 cursor-pointer hover:border-pink-500/40 transition">
+                                        <div class="flex items-center gap-2 text-gray-300">
+                                            <i class="fa-solid fa-dog text-pink-400"></i>
+                                            <div>
+                                                <span class="font-medium">ヒメルメズペット</span>
+                                                <span class="text-[10px] text-pink-400 block font-mono">50%固定値カット</span>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="tvPet" onchange="updateCalculations()" class="w-4 h-4 rounded accent-pink-600 cursor-pointer">
+                                    </label>
+                                    <label class="flex items-center justify-between bg-gray-900/80 p-2.5 rounded-lg border border-gray-800 cursor-pointer hover:border-pink-500/40 transition">
+                                        <div class="flex items-center gap-2 text-gray-300">
+                                            <i class="fa-solid fa-hat-wizard text-pink-400"></i>
+                                            <div>
+                                                <span class="font-medium">ニクス・グラーティア</span>
+                                                <span class="text-[10px] text-pink-400 block font-mono">25%固定値カット</span>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="tvNyx" onchange="updateCalculations()" class="w-4 h-4 rounded accent-pink-600 cursor-pointer">
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- 減少スキル（競合・上書きルール：いずれか1つ適用） -->
@@ -445,7 +463,7 @@
                             <div class="w-6 h-6 rounded-full bg-blue-950 text-blue-400 flex items-center justify-center font-bold z-10 border border-blue-900/50">2</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
-                                    <span>MDEF 減衰</span>
+                                    <span>MDEF 減衰后</span>
                                     <span class="font-mono text-blue-400" id="step2Dmg">0</span>
                                 </div>
                                 <p class="text-[10px] text-gray-500" id="step2Formula"></p>
@@ -457,7 +475,7 @@
                             <div class="w-6 h-6 rounded-full bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold z-10 border border-indigo-900/50">3</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
-                                    <span>MRES 減衰</span>
+                                    <span>MRES 減衰后</span>
                                     <span class="font-mono text-indigo-400" id="step3Dmg">0</span>
                                 </div>
                                 <p class="text-[10px] text-gray-500" id="step3Formula"></p>
@@ -512,12 +530,12 @@
                             </div>
                         </div>
 
-                        <!-- ステップ 8: ヒメルメズペット -->
+                        <!-- ステップ 8: テトラボルテックス耐性 -->
                         <div class="flex items-start space-x-3 text-xs relative">
                             <div class="w-6 h-6 rounded-full bg-pink-950 text-pink-400 flex items-center justify-center font-bold z-10 border border-pink-900/50">8</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-gray-300 font-semibold">
-                                    <span>ヒメルメズペット 適用後</span>
+                                    <span>テトラボルテックス耐性 適用後</span>
                                     <span class="font-mono text-pink-400" id="step8Dmg">0</span>
                                 </div>
                                 <p class="text-[10px] text-gray-500" id="step8Formula"></p>
@@ -544,7 +562,7 @@
                     <div class="text-xs text-gray-400 space-y-2">
                         <p class="font-mono bg-black/40 p-2 rounded text-[11px] leading-relaxed break-all">
                             最終総被ダメージ = (1Hitダメージ) × 4Hit<br>
-                            1Hitダメージ = MATK×倍率(100or200) × MDEF残 × MRES残 × ボス耐性残 × 種族耐性残 × 無属性耐性残 × EC残 × ペット残 × スキル残
+                            1Hitダメージ = MATK×倍率(100or200) × MDEF残 × MRES残 × ボス耐性残 × 種族耐性残 × 無属性耐性残 × EC残 × TV耐性残 × スキル残
                         </p>
                         <ul class="list-disc pl-4 space-y-1 text-gray-400 text-[11px]">
                             <li><strong class="text-blue-300">MDEF軽減率:</strong> <code class="font-mono text-gray-200">(1000 + MDEF) ÷ (1000 + MDEF × 10)</code></li>
@@ -740,8 +758,9 @@
             document.getElementById("ecInput").value = 0;
             document.getElementById("ecSlider").value = 0;
 
-            // ペット: OFF
-            document.getElementById("himmelPet").checked = false;
+            // テトラボルテックス耐性: OFF
+            document.getElementById("tvPet").checked = false;
+            document.getElementById("tvNyx").checked = false;
 
             // スキル: なし
             setReduceSkill('none');
@@ -827,7 +846,8 @@
             const raceResist = parseFloat(document.getElementById("raceResistInput").value) || 0;
             const neutralResist = parseFloat(document.getElementById("neutralResistInput").value) || 0;
             const ec = parseFloat(document.getElementById("ecInput").value) || 0;
-            const himmelPet = document.getElementById("himmelPet").checked;
+            const tvPet = document.getElementById("tvPet").checked;
+            const tvNyx = document.getElementById("tvNyx").checked;
             const hp = parseFloat(document.getElementById("hpInput").value) || 1;
 
             // 1. 基本ダメージ計算 (ボス固有の倍率を適用)
@@ -867,9 +887,14 @@
             const ecRate = (100 - ec) / 100;
             const ecDamage = neutralResistDamage * ecRate;
 
-            // 8. ヒメルメズペット
-            const petRate = himmelPet ? 0.5 : 1.0;
-            const petDamage = ecDamage * petRate;
+            // 8. テトラボルテックス耐性 (固定値カットの合算)
+            let tvResist = 0;
+            if (tvPet) tvResist += 50;
+            if (tvNyx) tvResist += 25;
+            document.getElementById("tvResistTotalVal").innerText = tvResist + "%カット";
+
+            const tvRate = (100 - tvResist) / 100;
+            const tvResistDamage = ecDamage * tvRate;
 
             // 9. 減少スキル (最も高い軽減率スキルを排他選択)
             let skillRate = 1.0;
@@ -881,7 +906,7 @@
             if (currentReduceSkill === 'kongo') skillRate = 0.1;       // 90%カット
             
             // 1Hitあたりのダメージ
-            const oneHitDamage = Math.round(petDamage * skillRate);
+            const oneHitDamage = Math.round(tvResistDamage * skillRate);
             
             // 総被ダメージ (1Hitダメージ × 4Hit)
             const finalDamage = oneHitDamage * 4;
@@ -903,7 +928,11 @@
             const ecFormulaText = `EC: -${ec}% (残率: ${(ecRate * 100).toFixed(0)}%)`;
             updateStepUI(7, ecDamage, ecFormulaText);
             
-            updateStepUI(8, petDamage, himmelPet ? "ペット有り: -50%" : "ペット無し: 補正なし");
+            let tvFormulaText = "耐性なし (残率: 100%)";
+            if (tvPet && tvNyx) tvFormulaText = "ペット(-50%) ＋ ニクス(-25%) = -75% (残率: 25%)";
+            else if (tvPet) tvFormulaText = "ヒメルメズペット: -50% (残率: 50%)";
+            else if (tvNyx) tvFormulaText = "ニクス・グラーティア: -25% (残率: 75%)";
+            updateStepUI(8, tvResistDamage, tvFormulaText);
             
             let skillName = "適用なし";
             if(currentReduceSkill === 'ironhowling') skillName = "ｱｲｱﾝﾊｳﾘﾝｸﾞ (-40%)";
@@ -1069,7 +1098,7 @@
                             <span class="text-amber-300 font-bold font-mono">${Math.ceil(oneHitDmg * (oneHitPercent >= 100 ? 1 : 4)).toLocaleString()} 以上にする</span>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-500 italic mt-1">※その他、ヒメルメズペットの同伴や、アンチマジック/アイアンハウリング/うずくまる/金剛を起動することで容易に突破可能です。</p>
+                    <p class="text-[10px] text-gray-500 italic mt-1">※その他、テトラ耐性（ヒメルメズペット・ニクス等）の確保や、アンチマジック/アイアンハウリング/うずくまる/金剛を起動することで容易に突破可能です。</p>
                 </div>
             `;
         }
